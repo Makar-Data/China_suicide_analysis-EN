@@ -177,7 +177,7 @@ First, unique values of the dataset categorical columns were pulled.
 ![0 4](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/78d9ae79-9350-4e32-8abb-ba088969fa83)
 
 Variations of 3 tables were used for the EDA:
-1. A number and proportion of values by column [[4]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/2.Table1.sql):
+1. A number and proportion of values by column [[4]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/2.Table1.sql):
 
 ![image](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/5d617278-80e7-4993-8d07-c319b93f6341)
 ```SQL
@@ -187,7 +187,7 @@ GROUP BY Sex
 ORDER BY Perc DESC;
 ```
 
-2. A number and proportion of values by two columns [[5]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/3.Table2.sql):
+2. A number and proportion of values by two columns [[5]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/3.Table2.sql):
 
 ![image](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/e032fa95-efbc-455c-b301-49fde98fc8b2)
 ```SQL
@@ -213,7 +213,7 @@ GROUP BY Age_Interval
 ORDER BY Total DESC;
 ```
 
-3. Proportion of outcomes by variables [[6]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/4.Table3.sql):
+3. Proportion of outcomes by variables [[6]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/4.Table3.sql):
 
 ![image](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/e94c5474-f805-4f60-9cc5-0e65045b68a4)
 ```SQL
@@ -233,7 +233,7 @@ FROM (
 	) Src;
 ```
 
-A combination of other variables were also used to construct data tables [[7]](https://github.com/Makar-Data/China_suicide_analysis-RU/tree/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F).
+A combination of other variables were also used to construct data tables [[7]](https://github.com/Makar-Data/China_suicide_analysis-EN/tree/main/2.%20EDA/Images).
 
 A number of barplots were made with Python and Pyodbc. Some of them are the following:
 
@@ -587,17 +587,17 @@ plt.show()
 ```
 
 EDA results:
-- The chronological framework is 2009-2011. Each year consists of 12 months [[8]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/4.%D0%9F%D0%BE%D0%BB%D0%BD%D0%BE%D1%82%D0%B0_%D0%B3%D0%BE%D0%B4%D0%BE%D0%B2.png);
-- Dataset consists primarily of observations in rural areas (2213, 86.08%) [[9]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/6.3.%D0%A0%D0%B0%D1%81%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BC%D0%B5%D1%81%D1%82%D0%BD%D0%BE%D1%81%D1%82%D0%B8.png) with a correspondingly high proportion of farmers (2032, 79.04%) [[10]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/6.5.%D0%A0%D0%B0%D1%81%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%BE%D1%84%D0%B5%D1%81%D1%81%D0%B8%D0%B9.png);
-- Observations were about evenly divided on the outcome of attempted suicide (1315, 51.15% - выжили; 1256, 48.85% - умерли) [[11]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/6.7.%D0%A0%D0%B0%D1%81%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B8%D1%81%D1%85%D0%BE%D0%B4%D0%BE%D0%B2.png);
+- The chronological framework is 2009-2011. Each year consists of 12 months [[8]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/4.Year_completeness.png);
+- Dataset consists primarily of observations in rural areas (2213, 86.08%) [[9]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/6.3.Area_distribution.png) with a correspondingly high proportion of farmers (2032, 79.04%) [[10]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/6.5.Occupation_distribution.png);
+- Observations were about evenly divided on the outcome of attempted suicide (1315, 51.15% - выжили; 1256, 48.85% - умерли) [[11]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/6.7.Outcome_distribution.png);
 - Seasonal fluctuations of cases are visible. The maximum is recorded in summer and the minimum in winter;
-- All survivors of the suicide attempt were hospitalized. Of those who subsequently died, only 238, 19% [[12]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/3.3.%D0%A3%D1%80%D0%BE%D0%B2%D0%B5%D0%BD%D1%8C_%D0%B3%D0%BE%D1%81%D0%BF%D0%B8%D1%82%D0%B0%D0%BB%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D0%B8_%D0%BF%D0%BE_%D0%B8%D1%81%D1%85%D0%BE%D0%B4%D0%B0%D0%BC.png). Attempt outcome is a major predictor of hospitalization;
+- All survivors of the suicide attempt were hospitalized. Of those who subsequently died, only 238, 19% [[12]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/3.3.Hospitalization_rate_by_outcomes.png). Attempt outcome is a major predictor of hospitalization;
 - The lethality of suicide attempts increases steadily with increasing age;
 - With increasing age, the pattern of methods used tends toward the more lethal;
 - The most common methods are: pesticide use (1768, 68.77%), hanging (431, 16.76%), other poisons (146, 9.84%); the least: jumping (15, 0.58%), drowning (26, 1.01%), cutting (29, 1.13%);
-- The most lethal methods are: drowning (26/26, 100%), hanging (419/431, 97%), jumping (12/15, 80%); the least: unspecified poision (3/104, 3%), unspecified method (3/48, 6%), other poisons (15/146, 10%) [[13]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/3.1.%D0%A3%D1%80%D0%BE%D0%B2%D0%B5%D0%BD%D1%8C_%D1%81%D0%BC%D0%B5%D1%80%D1%82%D0%B8_%D0%BF%D0%BE_%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D0%B0%D0%BC.png);
-- The most common methods for females are: other poisons (66% of observations apply to women), drowning (68%), pesticide (54%); males: unspecified method (63% of observations apply to men), hanging (61%), cutting (52%) [[14]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/3.5.%D0%94%D0%BE%D0%BB%D1%8F_%D0%BC%D1%83%D0%B6%D1%87%D0%B8%D0%BD_%D0%BF%D0%BE_%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D0%B0%D0%BC.png);
-- Although the survival rate after pesticide use is relatively high, the lethality of attempts in rural areas is slightly higher than in urban areas (52%, 41%) [[15]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/4.%20%D0%9C%D0%BE%D0%B4%D0%B5%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5/1.3.Death_rate_by_area.png).
+- The most lethal methods are: drowning (26/26, 100%), hanging (419/431, 97%), jumping (12/15, 80%); the least: unspecified poision (3/104, 3%), unspecified method (3/48, 6%), other poisons (15/146, 10%) [[13]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/3.1.Death_rate_by_methods.png);
+- The most common methods for females are: other poisons (66% of observations apply to women), drowning (68%), pesticide (54%); males: unspecified method (63% of observations apply to men), hanging (61%), cutting (52%) [[14]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/3.5.Sex_rate_by_methods.png);
+- Although the survival rate after pesticide use is relatively high, the lethality of attempts in rural areas is slightly higher than in urban areas (52%, 41%) [[15]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/1.3.Area_ratio.png).
 
 ---
 
