@@ -1,4 +1,4 @@
-# Suicide Analysis Project (EM)
+# Suicide Analysis Project (EN)
 
 Analytical review [of suicide statistics](https://www.kaggle.com/datasets/utkarshx27/suicide-attempts-in-shandong-china) in Shandong, China (2009-2011).
 
