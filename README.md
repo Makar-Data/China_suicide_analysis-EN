@@ -12,16 +12,8 @@ Compared to the agrarian society, the industrialized and information societies r
 Questions:
 - What demographic risk groups can be identified?
 - What are the predictors of method and outcome of suicide attempts, as well as hospitalization?
-- What are the differences between urban and rural observations?
 - What recommendations can be made based on the available data?
 - What additional information is needed for a more in-depth study?
-
-Conclusions:
-1. ...
-2. ...
-3. ...
-4. ...
-5. ...
 
 ---
 
