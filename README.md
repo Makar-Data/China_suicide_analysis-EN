@@ -164,7 +164,7 @@ FROM suicide_china
 ON suicide_china.Person_ID = ints.Person_ID;
 ```
 
-Full SQL-document [[2]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/1.%20%D0%A7%D0%B8%D1%81%D1%82%D0%BA%D0%B0%20%D0%B8%20%D0%BF%D1%80%D0%B5%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5/Data_clean.sql) is listed in the repository.
+Full SQL-document [[2]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/1.%20Data%20Cleaning/Data_clean.sql) is listed in the repository.
 
 As a result of data cleaning, an analysis-ready suicide_china [[3]](suicide_china.rpt) table was created.
 
