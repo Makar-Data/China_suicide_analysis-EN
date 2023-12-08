@@ -581,7 +581,7 @@ plt.show()
 EDA results:
 - The chronological framework is 2009-2011. Each year consists of 12 months [[8]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/4.Year_completeness.png);
 - Dataset consists primarily of observations in rural areas (2213, 86.08%) [[9]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/6.3.Area_distribution.png) with a correspondingly high proportion of farmers (2032, 79.04%) [[10]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/6.5.Occupation_distribution.png);
-- Observations were about evenly divided on the outcome of attempted suicide (1315, 51.15% - выжили; 1256, 48.85% - умерли) [[11]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/6.7.Outcome_distribution.png);
+- Observations were about evenly divided on the outcome of attempted suicide (1315, 51.15% - survived; 1256, 48.85% - died) [[11]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/6.7.Outcome_distribution.png);
 - Seasonal fluctuations of cases are visible. The maximum is recorded in summer and the minimum in winter;
 - All survivors of the suicide attempt were hospitalized. Of those who subsequently died, only 238, 19% [[12]](https://github.com/Makar-Data/China_suicide_analysis-EN/blob/main/2.%20EDA/Images/3.3.Hospitalization_rate_by_outcomes.png). Attempt outcome is a major predictor of hospitalization;
 - The lethality of suicide attempts increases steadily with increasing age;
@@ -755,7 +755,7 @@ plt.show()
 
 ---
 
-## Этап 4. Modeling
+## Stage 4. Modeling
 
 Suicide outcome was used as the target value for the logistic regression model.
 
@@ -859,7 +859,7 @@ plt.show()
 
 ---
 
-## Этап 5. Conclusion and discussion
+## Stage 5. Conclusion and discussion
 
 Education was not identified in previous stages of analysis as the most important predictor of mortality, but is confirmed upon visual inspection.
 
