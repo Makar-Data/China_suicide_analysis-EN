@@ -169,3 +169,718 @@ Full SQL-document [[2]](https://github.com/Makar-Data/China_suicide_analysis-RU/
 As a result of data cleaning, an analysis-ready suicide_china [[3]](suicide_china.rpt) table was created.
 
 ---
+
+## Stage 2. Exploratory Data Analysis
+As an exercise, SQL Server tables were utilized whenever possible instead of Pandas crosstabs.
+
+First, unique values of the dataset categorical columns were pulled.
+![0 4](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/78d9ae79-9350-4e32-8abb-ba088969fa83)
+
+Variations of 3 tables were used for the EDA:
+1. A number and proportion of values by column [[4]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/2.Table1.sql):
+
+![image](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/5d617278-80e7-4993-8d07-c319b93f6341)
+```SQL
+SELECT Sex, COUNT(*) AS Amount, ROUND(CAST(COUNT(*) AS FLOAT)*100/SUM(CAST(COUNT(*) AS FLOAT)) OVER(), 2) AS Perc
+FROM suicide_china 
+GROUP BY Sex
+ORDER BY Perc DESC;
+```
+
+2. A number and proportion of values by two columns [[5]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/3.Table2.sql):
+
+![image](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/e032fa95-efbc-455c-b301-49fde98fc8b2)
+```SQL
+SELECT Age_Interval,
+
+CONCAT(
+CAST(COUNT(CASE WHEN Sex = 'male' THEN 1 ELSE NULL END) AS VARCHAR(10)), 
+' (', 
+CAST((ROUND(CAST(COUNT(CASE WHEN Sex = 'male' THEN 1 ELSE NULL END) AS FLOAT)*100/SUM(CAST(COUNT(*) AS FLOAT)) OVER(), 2)) AS VARCHAR(10)), 
+'%)') 
+AS Males,
+
+CONCAT(
+CAST(COUNT(CASE WHEN Sex = 'female' THEN 1 ELSE NULL END) AS VARCHAR(10)), 
+' (', 
+CAST((ROUND(CAST(COUNT(CASE WHEN Sex = 'female' THEN 1 ELSE NULL END) AS FLOAT)*100/SUM(CAST(COUNT(*) AS FLOAT)) OVER(), 2)) AS VARCHAR(10)), 
+'%)') 
+AS Females,
+COUNT(*) AS Total
+
+FROM suicide_china
+GROUP BY Age_Interval
+ORDER BY Total DESC;
+```
+
+3. Proportion of outcomes by variables [[6]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/4.Table3.sql):
+
+![image](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/e94c5474-f805-4f60-9cc5-0e65045b68a4)
+```SQL
+SELECT *, 
+CONCAT(CAST(ROUND(CAST(Died AS FLOAT)/CAST(Total AS FLOAT), 2)*100 AS VARCHAR(10)), '%') AS Death_Rate
+
+FROM (
+	SELECT Method,
+	COUNT(CASE WHEN Died = 1 THEN 1 ELSE NULL END)
+	AS Died,
+	COUNT(CASE WHEN Died = 0 THEN 1 ELSE NULL END)
+	AS Survived,
+	COUNT(*) AS Total
+	
+	FROM suicide_china
+	GROUP BY Method
+	) Src;
+```
+
+A combination of other variables were also used to construct data tables [[7]](https://github.com/Makar-Data/China_suicide_analysis-RU/tree/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F).
+
+A number of barplots were made with Python and Pyodbc. Some of them are the following:
+
+![6 1 Возрастное_распределение](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/76bf5fe8-fda1-4cb5-8294-91153ef98797)
+![6 5 Распределение_профессий](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/2dd6b829-4a6f-4075-b5a4-194ea018ff4c)
+
+Another barplot was constructed to represent the chronological distribution of observations. Various seasons were color-coded to detect seasonal trends. Maximum of observations appeared in summer months, while minimum in winter. This corresponds with world observations [<a style = " white-space:nowrap; " href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3315262/">Woo et al, 2012</a>].
+
+![0 3](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/7973c6e6-1231-4e01-aea8-912edce9af13)
+```Python
+import pyodbc as db
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+
+# SQL Server interaction
+conn = db.connect('Driver={SQL Server};'
+                      'Server=Mai-PC\SQLEXPRESS;'
+                      'Database=T;'
+                      'Trusted_Connection=yes;')
+
+query = '''
+SELECT CONCAT(Yr, '-', Mth) AS YrMth,
+Mth,
+COUNT(*) AS Cases
+FROM suicide_china
+GROUP BY Yr, Mth
+ORDER BY Yr, Mth;
+'''
+
+sql_query = pd.read_sql_query(query, conn)
+df = pd.DataFrame(sql_query)
+
+# Transformation dates into datetime format for ease of color-coding
+df['YrMth'] = pd.to_datetime(df['YrMth'])
+df['YrMth'] = df['YrMth'].dt.date.apply(lambda x: x.strftime('%Y-%m'))
+
+# Color-coding
+colors = {1: 'tab:blue', 2: 'tab:blue',
+          3: 'tab:green', 4: 'tab:green', 5: 'tab:green',
+          6: 'tab:red', 7: 'tab:red', 8: 'tab:red',
+          9: 'tab:olive', 10: 'tab:olive', 11: 'tab:olive',
+          12: 'tab:blue'}
+
+legend = [Patch(facecolor='tab:blue', edgecolor='tab:blue', label='Winter'),
+          Patch(facecolor='tab:green', edgecolor='tab:green', label='Spring'),
+          Patch(facecolor='tab:red', edgecolor='tab:red', label='Summer'),
+          Patch(facecolor='tab:olive', edgecolor='tab:olive', label='Autumn'),]
+
+# Visualization
+plt.style.use('seaborn')
+
+plt.bar(x=df['YrMth'], height=df['Cases'], color=[colors[i] for i in df['Mth']])
+plt.xticks(fontsize=10, rotation=90)
+
+plt.title('Suicide attempts in Shandong over time')
+plt.xlabel('Date')
+plt.ylabel('Cases')
+
+plt.legend(handles=legend, loc='upper left')
+plt.tight_layout()
+plt.show()
+```
+
+A population pyramid was made to represent the demographic base of the dataset. Additionally, the pyramid was divided according to the outcome of suicide attempts. A significant portion of code was taken from the [CoderzColumn](https://www.youtube.com/watch?v=yRFAslDEtgk&t=6s&ab_channel=CoderzColumn) guide.
+
+![0 4 4](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/e46b235d-6ec3-4a19-8ab8-269f93202b48)
+```Python
+import pyodbc as db
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# SQL Server interaction
+conn = db.connect('Driver={SQL Server};'
+                      'Server=Mai-PC\SQLEXPRESS;'
+                      'Database=T;'
+                      'Trusted_Connection=yes;')
+
+query = '''  
+SELECT Sex, Age, Died  
+FROM suicide_china;  
+'''
+
+sql_query = pd.read_sql_query(query, conn)
+df = pd.DataFrame(sql_query)
+
+# Repeated age interval creation to preserve the intervals with no observations and their order
+df['Age_Interval'] = pd.cut(df['Age'],
+                            bins=[0, 4, 9, 14, 19, 24, 29, 34, 39, 44, 49,
+                                  54, 59, 64, 69, 74, 79, 84, 89, 94, 99, 104],
+                            labels=['0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34', '35-39',
+                                    '40-44', '45-49', '50-54', '55-59', '60-64', '65-69', '70-74', '75-79',
+                                    '80-84', '85-89', '90-94', '95-99', '100-104'])
+
+# Matrix creation
+crosstab = pd.crosstab(index=df['Age_Interval'], columns=[df['Sex'], df['Died']], dropna=False, normalize='all')
+male_died = [number * 100 for number in crosstab['male'][1]]
+female_died = [number * 100 for number in crosstab['female'][1]]
+male_lived = [number * 100 for number in crosstab['male'][0]]
+female_lived = [number * 100 for number in crosstab['female'][0]]
+
+# Transformation of the matrix into the format, suitable for the pyramid's visualization code
+age = ['0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64',
+       '65-69', '70-74', '75-79', '80-84', '85-89', '90-94', '95-99', '100-104']
+
+pyramid_df = pd.DataFrame({'Age': age, 'Male_l': male_lived, 'Male_d': male_died,
+                           'Female_d': female_died, 'Female_l': female_lived})
+
+# Creation of columns with the data on relative position of barplot parts
+pyramid_df['Female_Width'] = pyramid_df['Female_d'] + pyramid_df['Female_l']
+pyramid_df['Male_Width'] = pyramid_df['Male_d'] + pyramid_df['Male_l']
+pyramid_df['Male_d_Left'] = -pyramid_df['Male_d']
+pyramid_df['Male_l_Left'] = -pyramid_df['Male_Width']
+
+# Visualization initialization
+plt.style.use('seaborn-v0_8')
+fig = plt.figure(figsize=(15,10))
+
+plt.barh(y=pyramid_df['Age'], width=pyramid_df['Female_d'],
+         color='tab:red', label='Females Died', edgecolor='black')
+plt.barh(y=pyramid_df['Age'], width=pyramid_df['Female_l'], left=pyramid_df['Female_d'],
+         color='tab:orange', label='Females Survived', edgecolor='black')
+plt.barh(y=pyramid_df['Age'], width=pyramid_df['Male_d'], left=pyramid_df['Male_d_Left'],
+         color='tab:blue', label='Males Died', edgecolor='black')
+plt.barh(y=pyramid_df['Age'], width=pyramid_df['Male_l'], left=pyramid_df['Male_l_Left'],
+         color='tab:cyan', label='Males Survived', edgecolor='black')
+
+# Creation of columns with the data on text position and format
+pyramid_df['Male_d_Text'] = pyramid_df['Male_d_Left'] / 2
+pyramid_df['Male_l_Text'] = (pyramid_df['Male_l_Left'] + pyramid_df['Male_d_Left']) / 2
+pyramid_df['Female_d_Text'] = (pyramid_df['Female_Width'] + pyramid_df['Female_d']) / 2
+pyramid_df['Female_l_Text'] = pyramid_df['Female_d'] / 2
+
+for idx in range(len(pyramid_df)):
+    alpha_ = 1 if pyramid_df['Male_d_Text'][idx] != 0.5 else 0
+    alpha_ = 1 if pyramid_df['Male_l_Text'][idx] != 0 else 0
+    alpha = 1 if pyramid_df['Female_d_Text'][idx] != 0 else 0
+    alpha = 1 if pyramid_df['Female_l_Text'][idx] != 0 else 0
+    plt.text(x=pyramid_df['Male_d_Text'][idx], y=idx,
+             s='{}%'.format(round(pyramid_df['Male_d'][idx], 1)),
+             fontsize=14, ha='center', va='center', alpha=alpha)
+    plt.text(x=pyramid_df['Male_l_Text'][idx], y=idx,
+             s='{}%'.format(round(pyramid_df['Male_l'][idx], 1)),
+             fontsize=14, ha='center', va='center', alpha=alpha)
+    plt.text(x=pyramid_df['Female_d_Text'][idx], y=idx,
+             s='{}%'.format(round(pyramid_df['Female_l'][idx], 1)),
+             fontsize=14, ha='center', va='center', alpha=alpha)
+    plt.text(x=pyramid_df['Female_l_Text'][idx], y=idx,
+             s='{}%'.format(round(pyramid_df['Female_d'][idx], 1)),
+             fontsize=14, ha='center', va='center', alpha=alpha)
+
+# Visualization finalization
+plt.xlim(-6, 6)
+plt.xticks(range(-6, 7), ['{}%'.format(i) for i in range(-6, 7)], fontsize=14)
+plt.yticks(fontsize=14)
+
+plt.title('Suicide attempts in Shandong (2009-2011)', pad=20, fontsize=25, fontweight='bold')
+plt.xlabel('Percentage of suicide attempts', fontsize=20, )
+plt.ylabel('Age', fontsize=20)
+
+plt.legend(fontsize=20, shadow=True)
+plt.tight_layout()
+plt.show()
+```
+
+Ratio of education, occupation and method values were displayed on piecharts.
+
+![Диаграмма образования](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/642ea2a1-bf99-4b4e-9551-36c8d6191ce4)
+![Диаграмма профессий](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/a369e93f-9bd6-4926-81e8-ff0c36793aae)
+![Одна диаграмма методов](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/a2efdfd9-f8eb-4c54-9eb3-17e261ac95f6)
+```Python
+import pyodbc as db
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# SQL Server interaction
+conn = db.connect('Driver={SQL Server};'
+                      'Server=Mai-PC\SQLEXPRESS;'
+                      'Database=T;'
+                      'Trusted_Connection=yes;')
+
+query = '''
+SELECT Education, COUNT(*) AS Amount
+FROM suicide_china
+GROUP BY Education
+ORDER BY Amount DESC;
+'''
+
+sql_query = pd.read_sql_query(query, conn)
+df = pd.DataFrame(sql_query)
+
+# Visualization
+palette = sns.color_palette('hls', len(df))
+plt.style.use('seaborn')
+
+fig, ax = plt.subplots()
+ax.pie(df['Amount'], autopct='%1.1f%%', pctdistance=0.8, colors=palette,
+              wedgeprops={'edgecolor': 'black', 'linewidth': 0.3})
+
+fig.suptitle('Education Ratio')
+
+ax.legend(labels=df['Education'] + ' ' + '(' + df['Amount'].astype(str) + ')',
+          loc=(0.9, 0))
+
+plt.tight_layout()
+plt.show()
+```
+
+Additionally, two pie charts of methods by the outcome of the suicide attempt were made.
+![Две диаграммы методов](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/667f7595-9761-4fb2-a369-b9082e7b4eb4)
+```Python
+import pyodbc as db
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# SQL Server interaction
+conn = db.connect('Driver={SQL Server};'
+                      'Server=Mai-PC\SQLEXPRESS;'
+                      'Database=T;'
+                      'Trusted_Connection=yes;')
+
+query = '''
+SELECT Method, Died, COUNT(*) AS Amount
+FROM suicide_china
+GROUP BY Method, Died
+ORDER BY Amount DESC;
+'''
+
+sql_query = pd.read_sql_query(query, conn)
+df = pd.DataFrame(sql_query)
+df_died = df.loc[df['Died'] == 1]
+df_lived = df.loc[df['Died'] == 0]
+
+# Visualization
+plt.style.use('seaborn')
+palette = sns.color_palette('hls', len(df))
+signified = df['Method'].unique()
+signifiers = palette.as_hex()
+unified_palette = {signified[i]: signifiers[i] for i in range(df['Method'].nunique())}
+died_palette = [unified_palette[signified] for signified in df_died['Method'].unique()]
+lived_palette = [unified_palette[signified] for signified in df_lived['Method'].unique()]
+
+fig = plt.figure()
+fig.suptitle('Methods by Outcome')
+
+ax1 = fig.add_subplot(121)
+ax1.set_title('Died')
+ax1.pie(df_died['Amount'], autopct='%1.1f%%', pctdistance=0.8, colors=died_palette,
+              wedgeprops={'edgecolor': 'black', 'linewidth': 0.3})
+ax1.legend(labels=df_died['Method'] + ' ' + '(' + df_died['Amount'].astype(str) + ')',
+           loc=(0,-0.2), ncol=2)
+
+ax2 = fig.add_subplot(122)
+ax2.set_title('Survived')
+ax2.pie(df_lived['Amount'], autopct='%1.1f%%', pctdistance=0.8, colors=lived_palette,
+              wedgeprops={'edgecolor': 'black', 'linewidth': 0.3})
+ax2.legend(labels=df_lived['Method'] + ' ' + '(' + df_lived['Amount'].astype(str) + ')',
+           loc=(0,-0.2), ncol=2)
+
+plt.grid(visible=False)
+plt.tight_layout()
+plt.show()
+```
+
+A graph of discrete distribution of methods by age intervals was also created.
+
+![0 5](https://github.com/Makar-Data/China_suicide_analysis/assets/152608115/619c7daf-796d-4aa8-a98f-7979ec0d6d6e)
+```Python
+import pyodbc as db
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# SQL Server interaction
+conn = db.connect('Driver={SQL Server};'
+                      'Server=Mai-PC\SQLEXPRESS;'
+                      'Database=T;'
+                      'Trusted_Connection=yes;')
+
+query = '''  
+SELECT Person_ID, Method, Age_Interval 
+FROM suicide_china
+'''
+
+sql_query = pd.read_sql_query(query, conn)
+df = pd.DataFrame(sql_query)
+
+# Transformation of the data into the format, suitable for the visualization code
+needed = df.pivot(index='Person_ID', columns='Age_Interval', values='Method')
+new_cols = [col for col in needed.columns if col != '100-104'] + ['100-104']
+needed = needed[new_cols]
+category_names = ['pesticide', 'hanging', 'other poison', 'poison unspec', 'unspecified', 'cutting', 'drowning', 'jumping', 'others']
+questions = list(needed.columns.values)
+raws = []
+
+list_obj_cols = needed.columns[needed.dtypes == 'object'].tolist()
+for obj_col in list_obj_cols:
+    needed[obj_col] = needed[obj_col].astype(pd.api.types.CategoricalDtype(categories=category_names))
+
+list_cat_cols = needed.columns[needed.dtypes == 'category'].tolist()
+for cat_col in list_cat_cols:
+    dc = needed[cat_col].value_counts().sort_index().reset_index().to_dict(orient='list')
+    raws.append(dc['count'])
+
+results = [[num / sum(brackets) * 100 for num in brackets] for brackets in raws]
+number_results = {questions[i]: raws[i] for i in range(len(questions))}
+percentage_results = {questions[i]: results[i] for i in range(len(questions))}
+
+# Visualization
+palette = sns.color_palette('hls', df['Method'].nunique())
+
+def survey(number_results, percentage_results, category_names):
+    labels = list(percentage_results.keys())
+    data = np.array(list(percentage_results.values()))
+    data_cum = data.cumsum(axis=1)
+    category_colors = palette
+
+    fig, ax = plt.subplots(figsize=(9.2, 5))
+    fig.suptitle('Methods by Age')
+    ax.invert_yaxis()
+    ax.xaxis.set_visible(False)
+    ax.set_xlim(0, np.sum(data, axis=1).max())
+
+    for i, (colname, color) in enumerate(zip(category_names, category_colors)):
+        widths = data[:, i]
+        starts = data_cum[:, i] - widths
+        ax.barh(labels, widths, left=starts, height=0.5,
+                label=colname, color=color)
+        xcenters = starts + widths / 2
+        numbers = np.array(list(number_results.values()))[:, i]
+
+        r, g, b = color
+        text_color = 'white' if r * g * b < 0.5 else 'darkgrey'
+        text_label = zip(xcenters, numbers)
+        for y, (x, c) in enumerate(text_label):
+            alpha = 1 if c != 0 else 0
+            ax.text(x, y+0.06, str(int(c)),
+                    ha='center', va='center', color=text_color, alpha=alpha, fontsize=8)
+    ax.legend(ncol=5, bbox_to_anchor=(0, 1),
+              loc='lower left', fontsize='small')
+    return fig, ax
+
+
+survey(number_results, percentage_results, category_names)
+
+plt.tight_layout()
+plt.show()
+```
+
+EDA results:
+- The chronological framework is 2009-2011. Each year consists of 12 months [[8]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/4.%D0%9F%D0%BE%D0%BB%D0%BD%D0%BE%D1%82%D0%B0_%D0%B3%D0%BE%D0%B4%D0%BE%D0%B2.png);
+- Dataset consists primarily of observations in rural areas (2213, 86.08%) [[9]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/6.3.%D0%A0%D0%B0%D1%81%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BC%D0%B5%D1%81%D1%82%D0%BD%D0%BE%D1%81%D1%82%D0%B8.png) with a correspondingly high proportion of farmers (2032, 79.04%) [[10]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/6.5.%D0%A0%D0%B0%D1%81%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D1%80%D0%BE%D1%84%D0%B5%D1%81%D1%81%D0%B8%D0%B9.png);
+- Observations were about evenly divided on the outcome of attempted suicide (1315, 51.15% - выжили; 1256, 48.85% - умерли) [[11]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/6.7.%D0%A0%D0%B0%D1%81%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B8%D1%81%D1%85%D0%BE%D0%B4%D0%BE%D0%B2.png);
+- Seasonal fluctuations of cases are visible. The maximum is recorded in summer and the minimum in winter;
+- All survivors of the suicide attempt were hospitalized. Of those who subsequently died, only 238, 19% [[12]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/3.3.%D0%A3%D1%80%D0%BE%D0%B2%D0%B5%D0%BD%D1%8C_%D0%B3%D0%BE%D1%81%D0%BF%D0%B8%D1%82%D0%B0%D0%BB%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D0%B8_%D0%BF%D0%BE_%D0%B8%D1%81%D1%85%D0%BE%D0%B4%D0%B0%D0%BC.png). Attempt outcome is a major predictor of hospitalization;
+- The lethality of suicide attempts increases steadily with increasing age;
+- With increasing age, the pattern of methods used tends toward the more lethal;
+- The most common methods are: pesticide use (1768, 68.77%), hanging (431, 16.76%), other poisons (146, 9.84%); the least: jumping (15, 0.58%), drowning (26, 1.01%), cutting (29, 1.13%);
+- The most lethal methods are: drowning (26/26, 100%), hanging (419/431, 97%), jumping (12/15, 80%); the least: unspecified poision (3/104, 3%), unspecified method (3/48, 6%), other poisons (15/146, 10%) [[13]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/3.1.%D0%A3%D1%80%D0%BE%D0%B2%D0%B5%D0%BD%D1%8C_%D1%81%D0%BC%D0%B5%D1%80%D1%82%D0%B8_%D0%BF%D0%BE_%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D0%B0%D0%BC.png);
+- The most common methods for females are: other poisons (66% of observations apply to women), drowning (68%), pesticide (54%); males: unspecified method (63% of observations apply to men), hanging (61%), cutting (52%) [[14]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/2.%20EDA/%D0%98%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F/3.5.%D0%94%D0%BE%D0%BB%D1%8F_%D0%BC%D1%83%D0%B6%D1%87%D0%B8%D0%BD_%D0%BF%D0%BE_%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D0%B0%D0%BC.png);
+- Although the survival rate after pesticide use is relatively high, the lethality of attempts in rural areas is slightly higher than in urban areas (52%, 41%) [[15]](https://github.com/Makar-Data/China_suicide_analysis-RU/blob/main/4.%20%D0%9C%D0%BE%D0%B4%D0%B5%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5/1.3.Death_rate_by_area.png).
+
+---
+
+## Stage 3. Statistical Hypothesis Testing
+
+It was possible to roll out two kinds of hypothesis tests: (1) for two independent samples; (2) for categorical values.
+
+Chi-test of categorical independence was used to determine the relationship of categorical values. A heat map of pvalue for the corresponding fields was compiled. The visualization algorithm was taken from [Shafqaat Ahmad](https://medium.com/analytics-vidhya/constructing-heat-map-for-chi-square-test-of-independence-6d78aa2b140f), ([github](https://github.com/shafqaatahmad/chisquare-test-heatmap/tree/main)).
+
+![Chi_heatmap](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/b74fcc14-2085-4115-955b-27aea07c81ae)
+```Python
+import pyodbc as db
+import pandas as pd
+import numpy as np
+from scipy import stats
+import seaborn as sns
+import matplotlib.pylab as plt
+
+conn = db.connect('Driver={SQL Server};'
+                      'Server=Mai-PC\SQLEXPRESS;'
+                      'Database=T;'
+                      'Trusted_Connection=yes;')
+
+query = '''
+SELECT *
+FROM suicide_china;
+'''
+
+sql_query = pd.read_sql_query(query, conn)
+df = pd.DataFrame(sql_query)
+df.index = df['Person_ID']
+del df['Person_ID']
+del df['Age']
+del df['Mth']
+
+col_names = df.columns
+
+chi_matrix=pd.DataFrame(df,columns=col_names,index=col_names)
+
+outercnt=0
+innercnt=0
+for icol in col_names:
+    for jcol in col_names:
+        mycrosstab=pd.crosstab(df[icol],df[jcol])
+        stat, p, dof, expected=stats.chi2_contingency(mycrosstab)
+        chi_matrix.iloc[outercnt,innercnt]=round(p,3)
+        cntexpected=expected[expected<5].size
+        perexpected=((expected.size-cntexpected)/expected.size)*100
+        if perexpected < 20:
+            chi_matrix.iloc[outercnt, innercnt] = 2
+        if icol == jcol:
+            chi_matrix.iloc[outercnt, innercnt] = 0.00
+        innercnt = innercnt + 1
+    outercnt = outercnt + 1
+    innercnt = 0
+
+plt.style.use('seaborn')
+fig = sns.heatmap(chi_matrix.astype(np.float64), annot=True, linewidths=0.1, cmap='coolwarm_r',
+            annot_kws={"fontsize": 8}, cbar_kws={'label': 'pvalue'})
+
+fig.set_title('Chi2 Independence Test Pvalues')
+plt.tight_layout()
+plt.show()
+```
+
+The Mann-Whitney-U-test was used to identify differences in the distribution of ages of individuals with different outcomes of suicide attempts. To exclude the possibility of using Student's t-test, Shapiro-Wilk test and Kolmogorov-Smirnov test of fit of distributions to normal distribution were conducted. Diviation from normality was detected, which excluded the possibility of using parametric tests. The shapes of distributions were compared visually. Their inconsistency requires interpretation of the Mann-Whitney-U-test results to be read as reflecting the situation of stochastic dominance of the values of one distribution over the values of another.
+
+A test was performed to determine if there was a statistically significant difference. The distributions are recorded on one graph with different colors.
+
+![Возрасты по исходам (один)](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/656371d3-cb34-4c06-866a-5d1bfce21db9)
+```Python
+import numpy as np
+import pyodbc as db
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy import stats
+
+# SQL Server interaction
+conn = db.connect('Driver={SQL Server};'
+                      'Server=Mai-PC\SQLEXPRESS;'
+                      'Database=T;'
+                      'Trusted_Connection=yes;')
+
+query = '''
+SELECT Age, Died
+FROM suicide_china;
+'''
+
+sql_query = pd.read_sql_query(query, conn)
+df = pd.DataFrame(sql_query)
+
+# Category division
+df_died = df.loc[df['Died'] == 1]
+df_lived = df.loc[df['Died'] == 0]
+dfs = [df['Age'], df_died['Age'], df_lived['Age']]
+
+# Goodness of fit test
+print('Shapiro-Wilk Test:')
+for dataframe in dfs:
+    print(stats.shapiro(dataframe))
+
+print('\nKolmogorov-Smirnov Test:')
+for dataframe in dfs:
+    dist = getattr(stats, 'norm')
+    param = dist.fit(dataframe)
+    result = stats.kstest(dataframe, 'norm', args=param)
+    print(result)
+
+# Mann-Whitney test
+sample1 = df_died['Age']
+sample2 = df_lived['Age']
+
+results = stats.mannwhitneyu(sample1, sample2)
+u = results[0]
+mean = (len(sample1) * len(sample2)) / 2
+std = np.sqrt((len(sample1) * len(sample2) * (len(sample1) + len(sample2) + 1)) / 12)
+z = (u - mean) / std
+
+print('\nMann-Whitney Test:')
+print(results)
+print('Z-critical:', z)
+
+# Visualization
+dfd = df_died.groupby(['Age'], as_index=False).agg('count')
+dfd.rename(columns={'Died': 'Amount'}, inplace=True)
+dfl = df_lived.groupby(['Age'], as_index=False).agg('count')
+dfl.rename(columns={'Died': 'Amount'}, inplace=True)
+
+plt.style.use('seaborn')
+
+fig1 = plt.figure()
+
+ax1 = fig1.add_subplot(121)
+ax1.bar(dfd['Age'], dfd['Amount'], alpha=0.5)
+ax1.set_xlabel('Age')
+ax1.set_ylabel('Cases')
+ax2 = fig1.add_subplot(122)
+ax2.bar(dfl['Age'], dfl['Amount'], alpha=0.5)
+ax2.set_xlabel('Age')
+fig1.suptitle('Age Distribution')
+plt.tight_layout()
+
+fig2 = plt.figure()
+
+ax3 = fig2.add_subplot()
+ax3.bar(dfd['Age'], dfd['Amount'], alpha=0.5, color='tab:red', label='Died')
+ax3.bar(dfl['Age'], dfl['Amount'], alpha=0.5, color='tab:blue', label='Survived')
+ax3.set_ylabel('Cases')
+fig2.suptitle('Age Distribution')
+plt.legend()
+plt.tight_layout()
+
+fig3 = plt.figure()
+
+ax4 = fig3.add_subplot()
+ax4.boxplot([dfd['Age'], dfl['Age']])
+plt.xticks([1, 2], ['Died', 'Survived'])
+fig3.suptitle('Age Distribution')
+plt.tight_layout()
+
+plt.show()
+```
+
+---
+
+## Этап 4. Modeling
+
+Suicide outcome was used as the target value for the logistic regression model.
+
+Predictors were selected based on a random forest. Predictors that passed the arbitrarily set importance threshold of 0.10 (Education = 0.27, Method = 0.24, Age_Interval = 0.24) were allowed to move to subsequent stages of the procedure. The OOB of the random forest was equal to 0.80.
+
+The dataset was divided into three groups: training, validation, and test in the proportion of 70-15-15, respectively. For the training group intercept was equal to 2.81, coefficients: Age_Interval = 0.10, Education = -1.01, Method = -0.46.
+
+Confusion matrix was made based on validation and test groups. In the latter case f1-score of accuracy was equal to 0.78. The matrix was visualized.
+
+![Confusion_matrix](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/b393fdff-3700-4d68-af71-804650243045)
+```Python
+import numpy as np
+import pyodbc as db
+import pandas as pd
+from sklearn import metrics
+from sklearn import linear_model
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import seaborn as sns
+import matplotlib.pylab as plt
+
+# SQL Server interaction
+conn = db.connect('Driver={SQL Server};'
+                      'Server=Mai-PC\SQLEXPRESS;'
+                      'Database=T;'
+                      'Trusted_Connection=yes;')
+
+query = '''
+SELECT Sex, Age_Interval, Quart, Urban, Education, Occupation, Method, Died
+FROM suicide_china;
+'''
+
+sql_query = pd.read_sql_query(query, conn)
+df = pd.DataFrame(sql_query)
+label_encoder = preprocessing.LabelEncoder()
+df = df.apply(label_encoder.fit_transform)
+
+# X - features, y - target value (Died = 0/1)
+all_X = df.iloc[:,:-1]
+y = df.iloc[:,-1]
+
+# Selection of the most important features via the random forest method
+X_train_sel, X_test_sel, y_train_sel, y_test_sel = train_test_split(all_X, y, test_size=0.3, random_state=42)
+rfc = RandomForestClassifier(random_state=0, criterion='gini', oob_score=True)
+rfc.fit(X_train_sel, y_train_sel)
+
+feature_names = df.columns[:-1]
+assessed_X = []
+for feature in zip(feature_names, rfc.feature_importances_):
+    print(feature)
+    assessed_X.append(feature)
+print('OOB:', rfc.oob_score_)
+
+predictors = [predictor for (predictor, score) in assessed_X if score > 0.1]
+X = df[predictors]
+
+# Modeling
+X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+
+print("\ntrain sample:", len(X_train))
+print("val sample:", len(X_val))
+print("test sample:", len(X_test))
+
+log_model = linear_model.LogisticRegression(solver='lbfgs')
+log_model.fit(X=X_train, y=y_train)
+print('\nIntercept:', log_model.intercept_)
+print('Predictors:', predictors)
+print('Coefficient:', log_model.coef_)
+
+val_prediction = log_model.predict(X_val)
+print('\nValidation group matrix:')
+print(metrics.confusion_matrix(y_true=y_val, y_pred=val_prediction))
+print(metrics.classification_report(y_true=y_val, y_pred=val_prediction))
+
+test_predition = log_model.predict(X_test)
+confmatrix = metrics.confusion_matrix(y_true=y_test, y_pred=test_predition)
+print('\nTest group matrix:')
+print(confmatrix)
+print(metrics.classification_report(y_true=y_test, y_pred=test_predition))
+
+# Visualization of the confusion matrix
+plt.style.use('seaborn')
+class_names = [0, 1]
+
+fig, ax = plt.subplots()
+
+tick_marks = np.arange(len(class_names))
+plt.xticks(tick_marks, class_names)
+plt.yticks(tick_marks, class_names)
+sns.heatmap(pd.DataFrame(confmatrix), annot=True, cmap='Blues', fmt='g')
+ax.xaxis.set_label_position('top')
+plt.title('Confusion matrix', y = 1.1)
+plt.ylabel('Actual outcome')
+plt.xlabel('Predicted outcome')
+
+plt.tight_layout()
+plt.show()
+```
+
+---
+
+## Этап 5. Conclusion and discussion
+
+Education was not identified in previous stages of analysis as the most important predictor of mortality, but is confirmed upon visual inspection.
+
+![Образование_по_исходам](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/95353b1b-e593-401b-afa6-03f41338e584)
+
+The available data do not allow to draw a confident conclusion about the nature of this phenomenon. It is possible to put forward a number of hypotheses:
+
+Hypothesis 1. Level of education is a proxy for person's area of residence. Refuted by the low importance of area variable in the regression model as well as the relatively low difference in suicide lethality between urban and rural areas. Although the influence of the area variable cannot be ruled out, it should not be considered decisive.
+
+Hypothesis 2. Previous observations have shown an increase in the lethality of suicide attempts with increasing age. Therefore, it is possible to put forward a hypothesis that the combination of lower education and high age is a feature of the generation born during the years of industrialization and the Great Leap (1950s-1960s). This is refuted by the low importance of age in the regression, as well as by the fact that the age groups of 60-80 years have one of the highest share of education levels above primary education.
+
+![Образование по возрастам](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/64e4a122-0eb9-4e99-8179-5a76feecc334)
+
+Hypothesis 3. Illiteracy and primary education are predominantly recorded among people under 50-60 years of age. Representatives of these age groups were born in China during or after the economic reforms of the 1970s and 1980s. Perhaps the changed economic policies have marginalized people with low education who are unable to compete in the labor market. In part, this hypothesis is supported by observations in the Republic of Korea and Japan, where educational attainment and employment status are cited as major factors in adult mental distress [<a style = " white-space:nowrap; " href="https://www.nature.com/articles/s41598-020-71789-y">Cheon et al, 2020</a>], [<a style = " white-space:nowrap; " href="https://www.sciencedirect.com/science/article/abs/pii/S0165032719319822">Nishi et al, 2020</a>]. Of the predictors identified by studies of other East Asian countries (among others, low household income, marital status, independent living, sleep duration, physical health status, lack of mental support systems, etc.), education is one of the only ones available in this dataset. In such a case, the level of education can be considered a proxy for the set of socioeconomic parameters that lead to low household income. The assertion about the high role of education and wealth in mortality is confirmed by other studies [<a style = " white-space:nowrap; " href="https://www.thelancet.com/journals/lanpub/article/PIIS2468-2667(23)00207-4/fulltext">Favril et al, 2023</a>].
+
+A natural criticism would be the thesis that occupation is a more informative proxy for income. However, since the dataset consists only of people who have attempted suicide, it is appropriate to assume that the vast majority of observations are already ones of people with low income. Thus, under Hypothesis 3, education is a predictor of income not for the entire population of Shandong, but for the part of the population that is already in a less favorable socioeconomic position. Then, the column of occupations dominated by employment in agriculture does not give the opportunity to structure this social group as effectively as the values of education - because it already constitutes its main defining feature.
