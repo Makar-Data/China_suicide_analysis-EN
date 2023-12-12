@@ -15,6 +15,30 @@ Questions:
 - What recommendations can be made based on the available data?
 - What additional information is needed for a more in-depth study?
 
+Conclusions:
+1. Datest is most likely to be composed of low-income people. Within this group, illiterate individuals and adults with only primary education are particularly at risk of lethal outcomes;
+2. Age and method of attempt are other predictors of the outcome. With increasing age, there is a change in the pattern of methods used in favor of more lethal tools;
+3. Despite the lack of data on material well-being of the observed people, a high role of socio-economic factors in determining the lethality of suicide attempts has been hypothesized based on studies of other East Asian countries;
+4. All people who made a failed suicide attempt were hospitalized. Of those who died, 16% were hospitalized. The dataset data does not allow for a detailed discussion of the role of hospitalization in keeping a person alive;
+5. A worldwide trend for the maximum number of suicide attempts in late spring - early summer, and the minimum in the winter season is followed.
+
+Information needed for a more in-depth study:
+- Material well-being. Monthly income, annual income, approximate range of disposable income, or ability/inability to pay rent, make large purchases, etc.;
+- Marital status. Whether the person has stable and healthy social ties. Data from other studies shows that information on divorce will also be useful;
+- Demographic and socio-economic data of the Shandong population for comparison with the dataset. In this way it will be possible to establish factors of suicidality, not just the lethality of suicide attempts. Most likely such data is only available in Chinese.
+
+Recommendations:
+
+Approach A (Systematic). A system of suggestions to minimize the root factors of suicidality, the implementation of which is possible as part of the overall modernization of the province:
+- Expand health insurance to include psychotherapy services;
+- Increase enrollment in training areas for medical personnel specializing in mental health;
+- Form a system of adult evening schools. Particularly for illiterate persons and people with primary education;
+- Encourage mechanization of work on small farmlands.
+
+Approach B (Economical). A set of interventions aimed at improving the situation and not requiring systematic change:
+- Compile a demographic profile of a person predisposed to suicidal behavior for medical staff;
+- Establish a hotline for calls in life crisis circumstances.
+
 ---
 
 ## Stage 1. Data Cleaning
