@@ -621,7 +621,7 @@ EDA results:
 
 It was possible to roll out two kinds of hypothesis tests: (1) for two independent samples; (2) for categorical values.
 
-Chi-test of categorical independence was used to determine the relationship of categorical values. A heat map of pvalue for the corresponding fields was compiled. The visualization algorithm was taken from [Shafqaat Ahmad](https://medium.com/analytics-vidhya/constructing-heat-map-for-chi-square-test-of-independence-6d78aa2b140f), ([github](https://github.com/shafqaatahmad/chisquare-test-heatmap/tree/main)).
+Chi-test of categorical independence was used to determine the relationship of categorical values. Given the problem of multiple comparisons, a Bonferroni pvalue correction was performed.A heat map of pvalue for the corresponding fields was compiled. The visualization algorithm was taken from [Shafqaat Ahmad](https://medium.com/analytics-vidhya/constructing-heat-map-for-chi-square-test-of-independence-6d78aa2b140f), ([github](https://github.com/shafqaatahmad/chisquare-test-heatmap/tree/main)). The adjusted pvalue was taken as the minimum point of the palette.
 
 ![Chi_heatmap](https://github.com/Makar-Data/China_suicide_analysis-RU/assets/152608115/b74fcc14-2085-4115-955b-27aea07c81ae)
 ```Python
